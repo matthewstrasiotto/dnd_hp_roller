@@ -12,7 +12,7 @@ read_data <- function(folder_path) {
   
   
   # hp structure:
-  # character_name, dice_faces
+  # character_name, hit_die_size
   
   
   hp_data <- readr::read_csv(hp_path)
@@ -28,13 +28,20 @@ read_data <- function(folder_path) {
   
   combo %<>%
     mutate(
+      minimum_roll = if_else(
+        level == 1, 
+        hit_die_size, 
+        hit_die_size / 2
+        ),
       added_roll = choice + choice_dm,
-      modulo_roll = (added_roll %% dice_faces) + 1,
-      final_roll  = dplyr::case_when(
-        level == 1                   ~ dice_faces,
-        modulo_roll < dice_faces / 2 ~ dice_faces / 2,
-        TRUE                         ~ modulo_roll
+      modulo_roll = (added_roll %% hit_die_size) + 1,
+      final_roll  = if_else(
+        modulo_roll < minimum_roll,
+        minimum_roll,
+        modulo_roll
         )
       )
+  
+  combo
   
 }
